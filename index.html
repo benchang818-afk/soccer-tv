@@ -2,95 +2,45 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 2026 世界盃實時數據戰報中心</title>
+    <title>🏆 2026 世界盃實時數據追蹤中心</title>
     <style>
-        body { background-color: #06090e; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; text-align: center; }
-        .container { max-width: 1100px; margin: 0 auto; }
-        h1 { color: #00ff87; border-bottom: 2px solid #00ff87; padding-bottom: 15px; text-shadow: 0 0 10px rgba(0,255,135,0.4); margin-bottom: 10px; }
-        .status-tag { background: #111622; border: 1px solid #00ff87; color: #00ff87; padding: 6px 15px; border-radius: 20px; display: inline-block; font-size: 0.9rem; font-weight: bold; margin-bottom: 20px; }
-        .scoreboard { background: linear-gradient(180deg, #161f30, #0f1522); border: 1px solid #232d42; border-radius: 12px; padding: 25px; display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; }
-        .team { flex: 1; font-size: 1.8rem; font-weight: bold; }
-        .score-box { flex: 1; }
-        .score { font-size: 3.5rem; font-weight: 900; color: #00ff87; background: #06090e; padding: 5px 25px; border-radius: 8px; display: inline-block; }
-        .screen-box { background: #000; border-radius: 12px; overflow: hidden; border: 2px solid #232d42; box-shadow: 0 15px 40px rgba(0,0,0,0.8); margin-bottom: 25px; }
-        canvas { width: 100%; height: 100%; display: block; }
+        body { background-color: #0b0f19; color: #ffffff; font-family: sans-serif; text-align: center; padding: 50px; }
+        .board { background: #151c2c; padding: 30px; border-radius: 16px; max-width: 600px; margin: 20px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .score { font-size: 64px; color: #00ff66; font-family: monospace; font-weight: bold; margin: 20px 0; }
+        .status { color: #00e5ff; font-weight: bold; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>🏆 2026 世界盃實時數據戰報中心</h1>
-    <div class="status-tag">📡 實時數據通道：已依據用戶指引，強制修正對齊場上真實賽況！</div>
-
-    <!-- 💡 比分看板：強制修正為您眼前的真實比分 3 : 1 激戰現況！ -->
-    <div class="scoreboard">
-        <div class="team" style="color: #4ba3e3;">🔥 主隊</div>
-        <div class="score-box"><div class="score">3 : 1</div></div>
-        <div class="team" style="color: #ff3e3e;">客隊 🔥</div>
+    <h1>🏆 2026 世界盃實時數據追蹤中心</h1>
+    <div class="board">
+        <div class="status" id="state">正在連線至世界盃公開資料庫...</div>
+        <h2 id="teams">載入中...</h2>
+        <div class="score" id="score">0 : 0</div>
     </div>
 
-    <!-- 60FPS 絲滑球場大螢幕 -->
-    <div class="screen-box">
-        <canvas id="football-canvas"></canvas>
-    </div>
-</div>
-
-<script>
-    const canvas = document.getElementById('football-canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 1280; canvas.height = 720;
-
-    let ball = { x: 750, y: 320, vx: 5, vy: -3, radius: 10 };
-    let tick = 0;
-
-    // 22人實時動態陣容座標
-    let players = [];
-    const positionsY = [120, 240, 360, 480, 600, 180, 360, 540, 280, 440, 360];
-    const positionsXHome = [200, 200, 200, 200, 200, 400, 400, 400, 550, 550, 100];
-    const positionsXAway = [1080, 1080, 1080, 1080, 1080, 880, 880, 880, 730, 730, 1180];
-
-    for(let i=0; i<11; i++) {
-        players.push({ name: `球員 ${i+1}`, team: 'home', x: positionsXHome[i], y: positionsY[i], homeX: positionsXHome[i], homeY: positionsY[i], color: '#4ba3e3', isGK: i===10 });
-        players.push({ name: `球員 ${i+1}`, team: 'away', x: positionsXAway[i], y: positionsY[i], homeX: positionsXAway[i], homeY: positionsY[i], color: '#ff3e3e', isGK: i===10 });
-    }
-
-    function drawField() {
-        ctx.fillStyle = '#144c23'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 4;
-        ctx.strokeRect(60, 50, canvas.width - 120, canvas.height - 100);
-        ctx.beginPath(); ctx.moveTo(640, 50); ctx.lineTo(640, 670); ctx.stroke();
-        ctx.beginPath(); ctx.arc(640, 360, 100, 0, Math.PI * 2); ctx.stroke();
-        ctx.strokeRect(60, 160, 160, 400); ctx.strokeRect(canvas.width - 220, 160, 160, 400);
-        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 6;
-        ctx.strokeRect(15, 300, 45, 120); ctx.strokeRect(canvas.width - 60, 300, 45, 120);
-    }
-
-    function updatePhysics() {
-        tick++;
-        ball.x += ball.vx; ball.y += ball.vy;
-        if (ball.y < 65 || ball.y > 655) ball.vy *= -1;
-        if (ball.x < 70 || ball.x > canvas.width - 70) ball.vx *= -1;
-
-        players.forEach(p => {
-            if(p.isGK) { p.y += (ball.y - p.y) * 0.05; return; }
-            // 讓圓點繞著足球進行 3:1 的實時激烈防守移位
-            p.x = p.homeX + Math.sin(tick * 0.04 + p.y) * 60;
-            p.y = p.homeY + Math.cos(tick * 0.04 + p.x) * 60;
-        });
-    }
-
-    function gameLoop() {
-        drawField(); updatePhysics();
-        players.forEach(p => {
-            ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 14, 0, Math.PI * 2); ctx.fill();
-            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
-        });
-        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#000000'; ctx.lineWidth = 2; ctx.stroke();
-        requestAnimationFrame(gameLoop);
-    }
-    gameLoop();
-</script>
+    <script>
+        async function getData() {
+            try {
+                // 直接向網路上免費的公開伺服器抓資料
+                const res = await fetch('https://worldcup26.ir');
+                const result = await res.json();
+                const game = result.data || result;
+                
+                if (!game || game.length === 0) {
+                    document.getElementById('state').innerText = "⏱️ 狀態：未開賽";
+                    document.getElementById('teams').innerText = "目前沒有正在進行的比賽";
+                    return;
+                }
+                document.getElementById('state').innerText = `⏱️ 狀態：${game.status || '直播中'}`;
+                document.getElementById('teams').innerText = `${game.home_team} VS ${game.away_team}`;
+                document.getElementById('score').innerText = `${game.home_score ?? 0} : ${game.away_score ?? 0}`;
+            } catch (e) {
+                document.getElementById('state').innerText = "❌ 連線暫時失敗";
+                document.getElementById('teams').innerText = "請務必在 VS Code 中點擊「Go Live」按鈕打開此網頁";
+            }
+        }
+        getData();
+        setInterval(getData, 30000); // 每 30 秒自動更新比分
+    </script>
 </body>
 </html>
