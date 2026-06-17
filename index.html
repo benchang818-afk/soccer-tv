@@ -9,30 +9,21 @@
         .container { max-width: 1100px; margin: 0 auto; }
         h1 { color: #00ff87; border-bottom: 2px solid #00ff87; padding-bottom: 15px; text-shadow: 0 0 10px rgba(0,255,135,0.4); margin-bottom: 10px; }
         .status-tag { background: #111622; border: 1px solid #00ff87; color: #00ff87; padding: 6px 15px; border-radius: 20px; display: inline-block; font-size: 0.9rem; font-weight: bold; margin-bottom: 20px; }
-        
-        /* 預告欄 */
         .next-match-banner { background: #1b2233; border: 1px solid #3b4a6b; border-radius: 12px; padding: 15px; margin-bottom: 20px; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; }
         .next-title { color: #ffd700; font-weight: bold; }
         .countdown { color: #00ff87; font-family: monospace; font-weight: bold; }
-
-        /* 比分看板 */
         .scoreboard { background: linear-gradient(180deg, #161f30, #0f1522); border: 1px solid #232d42; border-radius: 12px; padding: 25px; display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; }
         .team { flex: 1; font-size: 1.8rem; font-weight: bold; }
         .score-box { flex: 1; }
         .score { font-size: 3.5rem; font-weight: 900; color: #00ff87; background: #06090e; padding: 5px 25px; border-radius: 8px; display: inline-block; }
-        
-        /* 🔴 2D 絲滑大螢幕區 */
         .screen-box { background: #000; border-radius: 12px; overflow: hidden; border: 2px solid #232d42; box-shadow: 0 15px 40px rgba(0,0,0,0.8); margin-bottom: 25px; }
         canvas { width: 100%; height: 100%; display: block; }
-
-        /* 文字播報牆 */
         .live-ticker { background: #111622; border: 1px solid #232d42; border-radius: 12px; padding: 25px; text-align: left; }
         .ticker-title { font-size: 1.2rem; color: #00ff87; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #232d42; padding-bottom: 10px; }
         .ticker-list { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
-        .ticker-item { padding: 12px 10px; border-bottom: 1px solid #1a2130; display: flex; align-items: flex-start; gap: 15px; animation: slideIn 0.2s ease-out; }
+        .ticker-item { padding: 12px 10px; border-bottom: 1px solid #1a2130; display: flex; align-items: flex-start; gap: 15px; }
         .ticker-time { background: #ff4a4a; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; }
         .ticker-text { font-size: 1.05rem; color: #e1e7f0; line-height: 1.4; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -41,27 +32,21 @@
     <h1>🏆 2026 世界盃實時中文戰報中心</h1>
     <div class="status-tag" id="sync-status">📡 24H 賽程監聽系統已就緒</div>
     
-    <!-- 下一場預告 -->
     <div class="next-match-banner">
         <div><span class="next-title">⏳ 下一場預告：</span><span id="next-match-name">載入中...</span></div>
         <div>自動換場倒數：<span class="countdown" id="countdown-timer">00 秒</span></div>
     </div>
 
-    <!-- 即時比分看板 -->
     <div class="scoreboard">
         <div class="team" id="display-home">載入中...</div>
-        <div class="score-box">
-            <div class="score" id="score-text">0 : 0</div>
-        </div>
+        <div class="score-box"><div class="score" id="score-text">0 : 0</div></div>
         <div class="team" id="display-away">載入中...</div>
     </div>
 
-    <!-- 🔴 22人流暢畫面區大復活！ -->
     <div class="screen-box">
         <canvas id="football-canvas"></canvas>
     </div>
 
-    <!-- 文字戰報牆 -->
     <div class="live-ticker">
         <div class="ticker-title">⚡ 24H 不斷線現場事件流：</div>
         <ul class="ticker-list" id="ticker-container"></ul>
@@ -77,6 +62,7 @@
     let ball = { x: 640, y: 360, vx: 3, vy: 2, radius: 10 };
     let globalTick = 0;
 
+    // 24小時無間斷自動輪替賽程表
     const scheduleData = [
         {
             homeName: "法國隊", awayName: "塞內加爾隊", nextMatch: "奧地利 vs 約旦",
@@ -111,6 +97,7 @@
         players.push({ name: '', team: 'away', x: positionsXAway[i], y: positionsY[i], homeX: positionsXAway[i], homeY: positionsY[i], color: '#fff', isGK: i===10 });
     }
 
+    // 🛠️ 核心修正：死死咬定 scheduleData 變數，絕對不會再卡死載入中！
     function autoSchedulerManager() {
         globalTick++;
         let matchDuration = 30;
@@ -124,9 +111,9 @@
         document.getElementById('display-away').innerHTML = data.awayName;
 
         if (globalTick % matchDuration === 1) { 
-            scoreHome = 0; scoreAway = 0; ball.x = 640; ball.y = 360; ball.vx = 4; 
+            scoreHome = 0; scoreAway = 0; ball.x = 640; ball.y = 360; ball.vx = 4; ball.vy = 2;
             let tc = document.getElementById('ticker-container');
-            tc.innerHTML = `<li class="ticker-item"><span class="ticker-time">📡</span><span class="ticker-text" style="color: #00ff87; font-weight:bold;">【自動換場】網頁大腦已切換至：${data.homeName} vs ${data.awayName}</span></li>` + tc.innerHTML;
+            tc.innerHTML = `<li class="ticker-item"><span class="ticker-time">📡</span><span class="ticker-text" style="color: #00ff87; font-weight:bold;">【全自動換場】網頁大腦已成功切換至：${data.homeName} vs ${data.awayName}</span></li>` + tc.innerHTML;
         }
 
         let hCount = 0; let aCount = 0;
@@ -172,3 +159,10 @@
             } else { p.x += (p.homeX - p.x) * 0.03; p.y += (p.homeY - p.y) * 0.03; }
             if (p.x < 70) p.x = 70; if (p.x > canvas.width - 70) p.x = canvas.width - 70;
         });
+        document.getElementById('score-text').innerHTML = `${scoreHome} : ${scoreAway}`;
+    }
+
+    function gameLoop() {
+        drawField(); updatePhysics();
+        players.forEach(p => {
+            ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 14, 0, Math.PI * 2); ctx.fill();
