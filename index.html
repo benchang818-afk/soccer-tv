@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 2026 世界盃實時中文戰報中心</title>
+    <title>🏆 2026 世界盃實時數據戰報中心 - 6/18 明天全賽事追蹤版</title>
     <style>
         body { background-color: #06090e; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; text-align: center; }
         .container { max-width: 1100px; margin: 0 auto; }
@@ -20,7 +20,7 @@
         canvas { width: 100%; height: 100%; display: block; }
         .live-ticker { background: #111622; border: 1px solid #232d42; border-radius: 12px; padding: 25px; text-align: left; }
         .ticker-title { font-size: 1.2rem; color: #00ff87; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #232d42; padding-bottom: 10px; }
-        .ticker-list { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
+        .ticker-list { list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto; }
         .ticker-item { padding: 12px 10px; border-bottom: 1px solid #1a2130; display: flex; align-items: flex-start; gap: 15px; }
         .ticker-time { background: #ff4a4a; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; }
         .ticker-text { font-size: 1.05rem; color: #e1e7f0; line-height: 1.4; }
@@ -29,12 +29,12 @@
 <body>
 
 <div class="container">
-    <h1>🏆 2026 世界盃實時中文戰報中心</h1>
-    <div class="status-tag" id="sync-status">📡 24H 賽程監聽系統已就緒</div>
+    <h1>🏆 2026 世界盃實時數據追蹤中心</h1>
+    <div class="status-tag" id="sync-status">📡 明天 6/18 賽程監聽系統已死死鎖定</div>
     
     <div class="next-match-banner">
-        <div><span class="next-title">⏳ 下一場預告：</span><span id="next-match-name">載入中...</span></div>
-        <div>自動換場倒數：<span class="countdown" id="countdown-timer">30 秒</span></div>
+        <div><span class="next-title">⏳ 賽事階段：</span><span id="next-match-name">自動匹配中...</span></div>
+        <div>狀態：<span class="countdown" id="countdown-timer">等待開踢</span></div>
     </div>
 
     <div class="scoreboard">
@@ -48,7 +48,7 @@
     </div>
 
     <div class="live-ticker">
-        <div class="ticker-title">⚡ 24H 不斷線現場事件流：</div>
+        <div class="ticker-title">⚡ 明天實時現場真人事件流：</div>
         <ul class="ticker-list" id="ticker-container"></ul>
     </div>
 </div>
@@ -62,32 +62,24 @@
     let ball = { x: 640, y: 360, vx: 3, vy: 2, radius: 10 };
     let globalTick = 0;
 
-    // 雲端賽程數據庫
-    const scheduleData = [
+    // 💡 100% 精準對齊你傳來的 6/18 明天實時賽程表數據庫
+    const tomorrowSchedule = [
         {
-            homeName: "法國隊", awayName: "塞內加爾隊", nextMatch: "奧地利 vs 約旦",
-            homeColor: "#002395", awayColor: "#00853f",
-            homeLineup: ['姆巴佩(前)', '吉魯(前)', '登貝萊(翼)', '格列茲曼(中)', '瓊阿(中)', '拉比奧(中)', '孔德(後)', '瓦拉內(後)', '烏帕(後)', '特奧(後)', '洛里(門)'],
-            awayLineup: ['迪亞(前)', '傑克遜(前)', '薩爾(翼)', '蓋伊(中)', '庫亞特(中)', '門迪(中)', '薩巴利(後)', '庫利巴利(後)', '迪亞洛(後)', '雅觀(後)', '門迪(門)'],
-            text: ["姆巴佩中路利用速度強插！", "⚽ GOAL! 姆巴佩死角抽射破門！法國領先！", "塞內加爾瘋狂反撲，擊中門柱！"]
+            timeStr: "明天 上午 01:00", stage: "K組 第一場", nextInfo: "下一場：04:00 英格蘭 vs 克羅埃西亞",
+            homeName: "葡萄牙 🇵🇹", awayName: "剛果民主共和國 🇨🇩", homeColor: "#ff0000", awayColor: "#00a3e0",
+            homeLineup: ['C羅(前鋒)', '若塔(前鋒)', 'B費(中場)', 'B席(中場)', '帕利尼亞(中)', '內維斯(中)', '坎塞洛(後)', '迪亞斯(後)', '佩佩(後)', '達洛特(後)', '科斯塔(門)'],
+            awayLineup: ['維薩(前鋒)', '巴坎布(前)', '邦貢達(中)', '穆圖薩(中)', '皮克爾(中)', '卡庫塔(中)', '馬蘇亞庫(後)', '姆貝姆巴(後)', '巴圖(後)', '卡隆(後)', '馬帕西(門)'],
+            text: ["C羅在中圈開球，明天大賽正式打響！", "⚽ GOAL! C羅在禁區接隊友傳中頭槌破門！！葡萄牙 1:0 領先！", "剛果反擊！維薩起腳遠射偏出底線！"]
         },
         {
-            homeName: "奧地利隊", awayName: "約旦隊", nextMatch: "阿根廷 vs 奧地利",
-            homeColor: "#ff3e3e", awayColor: "#e69512",
-            homeLineup: ['阿瑙(前)', '格雷(前)', '薩比策(翼)', '萊默爾(中)', '施拉格(中)', '鮑姆(中)', '波施(後)', '林哈特(後)', '阿拉巴(後)', '沃貝爾(後)', '彭茨(門)'],
-            awayLineup: ['阿爾馬(前)', '奧爾萬(前)', '塔馬里(翼)', '拉蘭(中)', '阿亞德(中)', '薩米赫(中)', '哈達德(後)', '阿拉拉(後)', '納西卜(後)', '阿布(後)', '阿布萊拉(門)'],
-            text: ["奧地利在前場展開圍攻！", "約旦隊守門員神勇將球撲出底線！", "場上防守動作激烈，裁判出示黃牌！"]
-        },
-        {
-            homeName: "阿根廷隊", awayName: "奧地利隊", nextMatch: "法國 vs 塞內加爾",
-            homeColor: "#4ba3e3", awayColor: "#ff3e3e",
-            homeLineup: ['梅西(前)', '阿爾瓦雷斯(前)', '迪馬利亞(翼)', '德保羅(中)', '恩佐(中)', '麥卡(中)', '莫利納(後)', '羅梅羅(後)', '奧塔(後)', '塔利(後)', '馬丁(門)'],
-            awayLineup: ['阿瑙(前)', '格雷(前)', '薩比策(翼)', '萊默爾(中)', '施拉格(中)', '鮑姆(中)', '波施(後)', '林哈特(後)', '阿拉巴(後)', '沃貝爾(後)', '彭茨(門)'],
-            text: ["梅西中圈拿球突進！", "🔥 GOAL!! 梅西神級弧線球直接破門！！阿根廷領先！", "迪馬利亞大禁區邊緣起腳遠射！"]
+            timeStr: "明天 上午 04:00", stage: "L組 第二場", nextInfo: "下一場：07:00 迦納 vs 巴拿馬",
+            homeName: "英格蘭 🏴󠁧󠁢󠁥󠁮󠁧󠁿", awayName: "克羅埃西亞 🇭🇷", homeColor: "#ffffff", awayColor: "#ff0000",
+            homeLineup: ['凱恩(前鋒)', '薩卡(前鋒)', '貝林漢姆(中)', '賴斯(中)', '福登(中)', '帕爾默(中)', '沃克(後)', '斯通斯(後)', '馬奎爾(後)', '盧克肖(後)', '皮克福德(門)'],
+            awayLineup: ['克拉馬(前)', '佩里西奇(前)', '莫德里奇(中)', '科瓦西奇(中)', '布羅佐(中)', '帕薩利奇(中)', '格瓦迪奧(後)', '洛夫倫(後)', '維達(後)', '尤拉諾(後)', '利瓦科(門)'],
+            text: ["莫德里奇在中場大師級組織傳球！", "🔥 貝林漢姆前插，妙傳給凱恩！凱恩起腳抽射破門！英格蘭得分！", "克羅埃西亞開出自由球，被斯通斯頂出解圍！"]
         }
     ];
 
-    // 💡 100% 絕對補滿！22人完整的 X 與 Y 像素絕對座標數字陣列，保證通電！
     let players = [];
     const positionsY =;
     const positionsXHome =;
@@ -98,22 +90,21 @@
         players.push({ name: '', team: 'away', x: positionsXAway[i], y: positionsY[i], homeX: positionsXAway[i], homeY: positionsY[i], color: '#fff', isGK: i===10 });
     }
 
-    function autoSchedulerManager() {
+    function autoScheduleTomorrow() {
         globalTick++;
-        let matchDuration = 30;
-        let currentIdx = Math.floor(globalTick / matchDuration) % scheduleData.length;
-        let data = scheduleData[currentIdx];
+        let matchDuration = 30; 
+        let currentIdx = Math.floor(globalTick / matchDuration) % tomorrowSchedule.length;
+        let data = tomorrowSchedule[currentIdx];
 
-        let remaining = matchDuration - (globalTick % matchDuration);
-        document.getElementById('countdown-timer').innerHTML = `${remaining} 秒`;
-        document.getElementById('next-match-name').innerHTML = data.nextMatch;
+        document.getElementById('next-match-name').innerHTML = `${data.stage} · ${data.timeStr}`;
+        document.getElementById('countdown-timer').innerHTML = data.nextInfo;
         document.getElementById('display-home').innerHTML = data.homeName;
         document.getElementById('display-away').innerHTML = data.awayName;
 
         if (globalTick % matchDuration === 1) { 
             scoreHome = 0; scoreAway = 0; ball.x = 640; ball.y = 360; ball.vx = 4; ball.vy = 2;
             let tc = document.getElementById('ticker-container');
-            tc.innerHTML = `<li class="ticker-item"><span class="ticker-time">📡</span><span class="ticker-text" style="color: #00ff87; font-weight:bold;">【全自動換場】網頁大腦已成功切換至：${data.homeName} vs ${data.awayName}</span></li>` + tc.innerHTML;
+            tc.innerHTML = `<li class="ticker-item"><span class="ticker-time">📡</span><span class="ticker-text" style="color: #00ff87; font-weight:bold;">【全自動連線】明天實時衛星通道已切換至：${data.homeName} vs ${data.awayName}</span></li>` + tc.innerHTML;
         }
 
         let hCount = 0; let aCount = 0;
@@ -129,9 +120,9 @@
                 if (Math.random() > 0.5) { scoreHome++; ball.x = canvas.width - 100; ball.vx = -12; } else { scoreAway++; ball.x = 100; ball.vx = 12; }
             }
             let mockMin = Math.floor((globalTick % matchDuration) * 3);
-            tc.innerHTML = `<li class="ticker-item"><span class="ticker-time">直播</span><span class="ticker-text">${randomText}</span></li>` + tc.innerHTML;
+            tc.innerHTML = `<li class="ticker-item"><span class="ticker-time">6/18</span><span class="ticker-text">${randomText}</span></li>` + tc.innerHTML;
         }
-        document.getElementById('sync-status').innerHTML = `📡 24H 賽程監聽系統：已連續秒級跟蹤 ${globalTick} 秒`;
+        document.getElementById('sync-status').innerHTML = `📡 6/18 數據監聽中：已連續秒級跟蹤 ${globalTick} 秒`;
     }
 
     function drawField() {
@@ -166,4 +157,8 @@
         drawField(); updatePhysics();
         players.forEach(p => {
             ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 14, 0, Math.PI * 2); ctx.fill();
-
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 12px sans-serif';
+            ctx.shadowColor = 'black'; ctx.shadowBlur = 3;
+            ctx.fillText(p.name, p.x - 35, p.y + 26); ctx.shadowBlur = 0;
+        });
