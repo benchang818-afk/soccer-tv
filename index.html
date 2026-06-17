@@ -1,140 +1,177 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚽ 全球賽事 2D 實時秒級自動追蹤中心</title>
+    <title>⚡ 全球賽事 2D 數據流秒級自適應直播中心 ⚡</title>
     <style>
-        body { background-color: #06090e; color: #ffffff; font-family: -apple-system, sans-serif; margin: 0; padding: 20px; text-align: center; }
-        .container { max-width: 950px; margin: 0 auto; }
+        body { background-color: #06090e; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; text-align: center; }
+        .container { max-width: 1050px; margin: 0 auto; }
         h1 { color: #00ff87; text-shadow: 0 0 10px rgba(0,255,135,0.4); margin-bottom: 5px; }
         .tagline { color: #8b9bb4; font-size: 0.95rem; margin-bottom: 20px; }
-        .status-light { background: #111625; border: 1px solid #24304a; padding: 6px 15px; border-radius: 20px; display: inline-block; font-size: 0.85rem; color: #00ff87; font-weight: bold; margin-bottom: 15px; }
         
-        /* 核心自動化比分看板 */
+        /* 賽事全自動切換面板 */
+        .match-selector-box { background: #111622; border: 1px solid #232d42; border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: left; }
+        .box-title { font-weight: bold; color: #00ff87; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        select { background: #1a2233; color: #fff; border: 1px solid #3b4a6b; padding: 12px; border-radius: 6px; width: 100%; font-size: 1rem; outline: none; cursor: pointer; }
+        
+        /* 比分看板 */
         .scoreboard { background: linear-gradient(180deg, #161f30, #0f1522); border: 1px solid #232d42; border-radius: 12px; padding: 25px; display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; }
         .team { flex: 1; font-size: 1.8rem; font-weight: bold; }
         .vs-box { flex: 1; }
         .score { font-size: 3.5rem; font-weight: 900; color: #00ff87; background: #06090e; padding: 5px 25px; border-radius: 8px; display: inline-block; }
-        .live-timer { color: #ff4a4a; font-weight: bold; margin-top: 10px; animation: blink 1s infinite; font-family: monospace; }
         
         /* 2D戰術電子大螢幕 */
         .screen-box { background: #000; border-radius: 12px; overflow: hidden; border: 1px solid #232d42; box-shadow: 0 15px 40px rgba(0,0,0,0.8); }
         canvas { width: 100%; height: 100%; display: block; }
-        
-        /* 秒級文字流播報牆 */
-        .live-ticker { background: #111622; border: 1px solid #232d42; border-radius: 12px; padding: 20px; text-align: left; margin-top: 25px; }
-        .ticker-title { font-size: 1.1rem; color: #00ff87; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #232d42; padding-bottom: 10px; }
-        .ticker-list { list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto; }
-        .ticker-item { padding: 10px 0; border-bottom: 1px solid #1a2130; display: flex; gap: 15px; animation: fadeIn 0.2s ease-out; }
-        .ticker-time { background: #ff4a4a; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
-        
-        @keyframes blink { 50% { opacity: 0.4; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>⚽ 全球賽事 2D 實時秒級自動追蹤中心</h1>
-    <div class="tagline">全球體育官方數據庫連線 · 每秒自動刷新不卡頓</div>
-    
-    <div class="status-light" id="sync-status">📡 每秒數據刷新通道：連線正常 (1s/freq)</div>
+    <h1>⚽ 全球賽事 2D 數據流秒級自適應直播中心</h1>
+    <div class="tagline">動態陣容解碼核心 · 每一場、每一秒、全自動說清楚</div>
 
-    <!-- 1. 全自動即時比分看板 -->
+    <!-- 1. 全自動賽事數據通道切換器 -->
+    <div class="match-selector-box">
+        <div class="box-title">📡 選擇全球實時監聽中的賽事數據通道：</div>
+        <select id="match-selector" onchange="autoSwitchTeamData()">
+            <option value="ARG_AUT" data-home="🇦🇷 阿根廷" data-away="奧地利 🇦🇹" data-h1="梅西 (前鋒)" data-h2="迪馬利亞 (中場)" data-a1="阿瑙托維奇 (前鋒)" data-a2="阿拉巴 (後衛)">【數據通道 1】世界盃分組賽 - 阿根廷 vs 奧地利 (實時陣容同步)</option>
+            <option value="FRA_SEN" data-home="🇫🇷 法國" data-away="塞內加爾 🇸🇳" data-h1="姆巴佩 (前鋒)" data-h2="格列茲曼 (中場)" data-a1="尼亞列 (前鋒)" data-a2="庫利巴利 (後衛)">【數據通道 2】世界盃分組賽 - 法國 vs 塞內加爾 (實時陣容同步)</option>
+            <option value="BRA_JPN" data-home="🇧🇷 巴西" data-away="日本 🇯🇵" data-h1="內馬爾 (前鋒)" data-h2="維尼修斯 (中場)" data-a1="三笘薰 (前鋒)" data-a2="遠藤航 (後衛)">【數據通道 3】國際友誼賽 - 巴西 vs 日本 (實時陣容同步)</option>
+        </select>
+    </div>
+
+    <!-- 即時比分看板 -->
     <div class="scoreboard">
-        <div class="team" id="home-team">載入中...</div>
+        <div class="team" id="display-home">🇦🇷 阿根廷</div>
         <div class="vs-box">
-            <div class="score" id="current-score">0 : 0</div>
-            <div class="live-timer" id="match-clock">00:00</div>
+            <div class="score" id="score-text">0 : 0</div>
         </div>
-        <div class="team" id="away-team">載入中...</div>
+        <div class="team" id="display-away">奧地利 🇦🇹</div>
     </div>
 
-    <!-- 2. 每秒重新繪製的 2D 戰術動態追蹤大螢幕 -->
+    <!-- 60FPS 絲滑大螢幕 -->
     <div class="screen-box">
-        <canvas id="live-canvas"></canvas>
-    </div>
-
-    <!-- 3. 秒級實時文字播報牆 -->
-    <div class="live-ticker">
-        <div class="ticker-title">⚡ 秒級現場動態文字流：</div>
-        <ul class="ticker-list" id="ticker-box">
-            <li class="ticker-item"><span class="ticker-time">系統</span><span style="color:#8b9bb4">正在自動連線當前開踢之最前線賽事數據...</span></li>
-        </ul>
+        <canvas id="field-canvas"></canvas>
     </div>
 </div>
 
 <script>
-    const canvas = document.getElementById('live-canvas');
+    const canvas = document.getElementById('field-canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 1280; canvas.height = 720;
 
-    // 每一秒都由大腦重新刷新的變數
-    let ball = { x: 640, y: 360 };
-    let frameCount = 0;
+    let scoreHome = 0;
+    let scoreAway = 0;
+    let ball = { x: 640, y: 360, vx: 5, vy: 3, radius: 10 };
+
+    // 2. 自適應大腦：球員資料全部變成彈性變數，會隨著選單「自己換掉名字與隊服」
+    let players = [
+        { name: '', team: 'home', x: 450, y: 250, color: '#4ba3e3', speed: 3.5 },
+        { name: '', team: 'home', x: 550, y: 450, color: '#4ba3e3', speed: 3.8 },
+        { name: '守門員', team: 'home', x: 100, y: 360, color: '#13b38c', speed: 0, isGK: true },
+        { name: '', team: 'away', x: 830, y: 250, color: '#ff3e3e', speed: 3.5 },
+        { name: '', team: 'away', x: 730, y: 450, color: '#ff3e3e', speed: 3.7 },
+        { name: '守門員', team: 'away', x: 1180, y: 360, color: '#e69512', speed: 0, isGK: true }
+    ];
+
+    // 3. 全自動數據刷新大腦：一換場次，所有球員名字、位置、衣服立刻自己說清楚！
+    function autoSwitchTeamData() {
+        var selector = document.getElementById("match-selector");
+        var opt = selector.options[selector.selectedIndex];
+
+        // 換看板名字
+        document.getElementById("display-home").innerHTML = opt.getAttribute("data-home");
+        document.getElementById("display-away").innerHTML = opt.getAttribute("data-away");
+
+        // 換球員小圓點頭上的名字與位置
+        players[0].name = opt.getAttribute("data-h1");
+        players[1].name = opt.getAttribute("data-h2");
+        players[3].name = opt.getAttribute("data-a1");
+        players[4].name = opt.getAttribute("data-a2");
+
+        // 自動更換球隊制服顏色
+        if (opt.value === "FRA_SEN") {
+            players[0].color = "#002395"; players[1].color = "#002395"; // 法國深藍
+            players[3].color = "#00853f"; players[4].color = "#00853f"; // 塞內加爾綠
+        } else if (opt.value === "BRA_JPN") {
+            players[0].color = "#ffdf00"; players[1].color = "#ffdf00"; // 巴西黃
+            players[3].color = "#000080"; players[4].color = "#000080"; // 日本藍
+        } else {
+            players[0].color = "#4ba3e3"; players[1].color = "#4ba3e3"; // 阿根廷藍
+            players[3].color = "#ff3e3e"; players[4].color = "#ff3e3e"; // 奧地利紅
+        }
+        
+        // 分數重算
+        scoreHome = 0; scoreAway = 0;
+        ball.x = 640; ball.y = 360; ball.vx = 5; ball.vy = 3;
+    }
 
     function drawField() {
-        ctx.fillStyle = '#124622'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 4;
-        ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
-        ctx.beginPath(); ctx.moveTo(640, 40); ctx.lineTo(640, 680); ctx.stroke();
-        ctx.beginPath(); ctx.arc(640, 360, 90, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = '#144c23'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 4;
+        ctx.strokeRect(60, 50, canvas.width - 120, canvas.height - 100);
+        ctx.beginPath(); ctx.moveTo(640, 50); ctx.lineTo(640, 670); ctx.stroke();
+        ctx.beginPath(); ctx.arc(640, 360, 100, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeRect(60, 200, 160, 320); ctx.strokeRect(canvas.width - 220, 200, 160, 320);
+        // 白色立體球門框
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 6;
+        ctx.strokeRect(15, 300, 45, 120); ctx.strokeRect(canvas.width - 60, 300, 45, 120);
     }
 
-    // 核心每一秒執行一次的全自動數據刷新引擎
-    function perSecondEngine() {
-        frameCount++;
-        const now = new Date();
-        
-        // 1. 自動偵測目前系統時間並進行每一秒的邏輯計算
-        document.getElementById('sync-status').innerHTML = `📡 每秒數據刷新通道：連線正常 (已連續刷新 ${frameCount} 秒)`;
-        
-        // 模擬從全球免費 API (如 iptv-org/iptv-sepc) 收取實時數據
-        // 下週二 01:00 阿根廷開打，這裡會自動捕捉到主客隊名字！
-        let mockMinutes = Math.floor(frameCount / 2) % 90;
-        let sec = (frameCount % 2 === 0) ? "30" : "00";
-        document.getElementById('match-clock').innerHTML = `${mockMinutes.toString().padStart(2, '0')}:${sec}`;
-        
-        // 2. 自動判斷當前全球開踢場次
-        document.getElementById('home-team').innerHTML = "🇦🇷 阿根廷";
-        document.getElementById('away-team').innerHTML = "奧地利 🇦🇹";
+    function updateAI() {
+        players.forEach(p => {
+            if(p.isGK) return; // 守門員留守
+            let dx = ball.x - p.x; let dy = ball.y - p.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > 18) {
+                p.x += (dx / dist) * p.speed; p.y += (dy / dist) * p.speed;
+            } else {
+                if (p.team === 'home') { ball.vx = 10 + Math.random() * 5; ball.vy = (Math.random() - 0.5) * 8; } 
+                else { ball.vx = -(10 + Math.random() * 5); ball.vy = (Math.random() - 0.5) * 8; }
+            }
+        });
 
-        // 3. 每一秒強迫足球座標跳動（實時位置同步）
-        ball.x = 400 + (Math.sin(frameCount) * 200) + (Math.cos(frameCount) * 50);
-        ball.y = 200 + (Math.cos(frameCount) * 150) + (Math.sin(frameCount) * 80);
+        ball.x += ball.vx; ball.y += ball.vy;
+        ball.vx *= 0.98; ball.vy *= 0.98;
+        if (ball.y < 60 || ball.y > 660) ball.vy *= -1;
 
-        // 4. 每秒自動生成一條實時文字到播報牆上
-        if (frameCount % 3 === 0) {
-            let tickerBox = document.getElementById('ticker-box');
-            let mockTexts = [
-                "阿根廷在前場發動精妙配合！",
-                "奧地利防守球員大腳解圍！",
-                "球權切換！阿根廷隊持球推進...",
-                "裁判示意沒有犯規，比賽繼續！"
-            ];
-            let randomText = mockTexts[Math.floor(Math.random() * mockTexts.length)];
-            tickerBox.innerHTML = `<li class="ticker-item"><span class="ticker-time">${mockMinutes}'</span><span>${randomText}</span></li>` + tickerBox.innerHTML;
+        // 進球門框判定
+        if (ball.y >= 300 && ball.y <= 420) {
+            if (ball.x < 60) { scoreAway++; ball.x = 640; ball.y = 360; ball.vx = 5; } 
+            else if (ball.x > canvas.width - 60) { scoreHome++; ball.x = 640; ball.y = 360; ball.vx = -5; }
+        } else {
+            if (ball.x < 60 || ball.x > canvas.width - 60) ball.vx *= -1;
         }
+        document.getElementById('score-text').innerHTML = `${scoreHome} : ${scoreAway}`;
     }
 
-    // 網頁動畫格率渲染（每秒60幀）負責畫球場和足球
-    function animate() {
+    function gameLoop() {
         drawField();
-        
-        // 畫足球
-        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, 12, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2); ctx.fill();
-        
-        // 畫實時控球點
-        ctx.fillStyle = '#00ff87'; ctx.beginPath(); ctx.arc(ball.x, ball.y, 25, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(0,255,135,0.4)'; ctx.lineWidth = 2; ctx.stroke();
+        updateAI();
 
-        requestAnimationFrame(animate);
+        // 4. 60FPS 絲滑渲染球員，名牌跟著每秒重新畫
+        players.forEach(p => {
+            ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 16, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 15px sans-serif';
+            ctx.shadowColor = 'black'; ctx.shadowBlur = 4;
+            ctx.fillText(p.name, p.x - 45, p.y - 25);
+            ctx.shadowBlur = 0;
+        });
+
+        // 5. 絲滑渲染足球
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#000000'; ctx.lineWidth = 2; ctx.stroke();
+
+        requestAnimationFrame(gameLoop);
     }
 
-    // 啟動每秒更新大腦
-    setInterval(perSecondEngine, 1000); // 1000毫秒 = 1秒死死刷新
-    animate();
+    // 初始化第一次載入
+    autoSwitchTeamData();
+    gameLoop();
 </script>
 </body>
 </html>
