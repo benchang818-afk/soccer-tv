@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 2026 世界盃實時數據戰報中心 - 6/18 明天全賽事追蹤版</title>
+    <title>🏆 2026 世界盃實時數據追蹤中心</title>
     <style>
         body { background-color: #06090e; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; text-align: center; }
         .container { max-width: 1100px; margin: 0 auto; }
@@ -16,7 +16,7 @@
         .team { flex: 1; font-size: 1.8rem; font-weight: bold; }
         .score-box { flex: 1; }
         .score { font-size: 3.5rem; font-weight: 900; color: #00ff87; background: #06090e; padding: 5px 25px; border-radius: 8px; display: inline-block; }
-        .screen-box { background: #000; border-radius: 12px; overflow: hidden; border: 2px solid #232d42; box-shadow: 0 15px 40px rgba(0,0,0,0.8); margin-bottom: 25px; }
+        .screen-box { background: #000; border-radius: 12px; overflow: hidden; border: 1px solid #232d42; box-shadow: 0 15px 40px rgba(0,0,0,0.8); margin-bottom: 25px; }
         canvas { width: 100%; height: 100%; display: block; }
         .live-ticker { background: #111622; border: 1px solid #232d42; border-radius: 12px; padding: 25px; text-align: left; }
         .ticker-title { font-size: 1.2rem; color: #00ff87; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #232d42; padding-bottom: 10px; }
@@ -30,7 +30,7 @@
 
 <div class="container">
     <h1>🏆 2026 世界盃實時數據追蹤中心</h1>
-    <div class="status-tag" id="sync-status">📡 明天 6/18 賽程監聽系統已死死鎖定</div>
+    <div class="status-tag" id="sync-status">📡 24H 賽程監聽系統已就緒</div>
     
     <div class="next-match-banner">
         <div><span class="next-title">⏳ 賽事階段：</span><span id="next-match-name">自動匹配中...</span></div>
@@ -62,8 +62,7 @@
     let ball = { x: 640, y: 360, vx: 3, vy: 2, radius: 10 };
     let globalTick = 0;
 
-    // 💡 100% 精準對齊你傳來的 6/18 明天實時賽程表數據庫
-    const tomorrowSchedule = [
+    const scheduleData = [
         {
             timeStr: "明天 上午 01:00", stage: "K組 第一場", nextInfo: "下一場：04:00 英格蘭 vs 克羅埃西亞",
             homeName: "葡萄牙 🇵🇹", awayName: "剛果民主共和國 🇨🇩", homeColor: "#ff0000", awayColor: "#00a3e0",
@@ -73,7 +72,7 @@
         },
         {
             timeStr: "明天 上午 04:00", stage: "L組 第二場", nextInfo: "下一場：07:00 迦納 vs 巴拿馬",
-            homeName: "英格蘭 🏴󠁧󠁢󠁥󠁮󠁧󠁿", awayName: "克羅埃西亞 🇭🇷", homeColor: "#ffffff", awayColor: "#ff0000",
+            homeName: "英格蘭 🏴󠁧󠁢󠁥󠁮詢󠁿", awayName: "克羅埃西亞 🇭🇷", homeColor: "#ffffff", awayColor: "#ff0000",
             homeLineup: ['凱恩(前鋒)', '薩卡(前鋒)', '貝林漢姆(中)', '賴斯(中)', '福登(中)', '帕爾默(中)', '沃克(後)', '斯通斯(後)', '馬奎爾(後)', '盧克肖(後)', '皮克福德(門)'],
             awayLineup: ['克拉馬(前)', '佩里西奇(前)', '莫德里奇(中)', '科瓦西奇(中)', '布羅佐(中)', '帕薩利奇(中)', '格瓦迪奧(後)', '洛夫倫(後)', '維達(後)', '尤拉諾(後)', '利瓦科(門)'],
             text: ["莫德里奇在中場大師級組織傳球！", "🔥 貝林漢姆前插，妙傳給凱恩！凱恩起腳抽射破門！英格蘭得分！", "克羅埃西亞開出自由球，被斯通斯頂出解圍！"]
@@ -93,8 +92,8 @@
     function autoScheduleTomorrow() {
         globalTick++;
         let matchDuration = 30; 
-        let currentIdx = Math.floor(globalTick / matchDuration) % tomorrowSchedule.length;
-        let data = tomorrowSchedule[currentIdx];
+        let currentIdx = Math.floor(globalTick / matchDuration) % scheduleData.length;
+        let data = scheduleData[currentIdx];
 
         document.getElementById('next-match-name').innerHTML = `${data.stage} · ${data.timeStr}`;
         document.getElementById('countdown-timer').innerHTML = data.nextInfo;
@@ -162,3 +161,4 @@
             ctx.shadowColor = 'black'; ctx.shadowBlur = 3;
             ctx.fillText(p.name, p.x - 35, p.y + 26); ctx.shadowBlur = 0;
         });
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2); ctx.fill();
