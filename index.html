@@ -3,126 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 2026 世界盃實時戰報中心 - 全自動賽程排程版</title>
+    <title>🏆 2026 世界盃 2D 實時全賽事全自動追蹤中心</title>
     <style>
         body { background-color: #06090e; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; text-align: center; }
-        .container { max-width: 900px; margin: 0 auto; }
-        h1 { color: #00ff87; border-bottom: 2px solid #00ff87; padding-bottom: 15px; text-shadow: 0 0 10px rgba(0,255,135,0.4); margin-bottom: 10px; }
-        .status-tag { background: #111622; border: 1px solid #00ff87; color: #00ff87; padding: 6px 15px; border-radius: 20px; display: inline-block; font-size: 0.9rem; font-weight: bold; margin-bottom: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        h1 { color: #00ff87; text-shadow: 0 0 10px rgba(0,255,135,0.4); margin-bottom: 5px; }
+        .tagline { color: #8b9bb4; font-size: 0.95rem; margin-bottom: 20px; }
         
-        /* 核心看板 */
-        .scoreboard { background: linear-gradient(180deg, #161f30, #0f1522); border: 1px solid #232d42; border-radius: 12px; padding: 30px; margin: 20px 0; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .team { flex: 1; font-size: 1.8rem; font-weight: bold; }
-        .score-box { flex: 1; }
-        .score { font-size: 3.5rem; font-weight: 900; color: #00ff87; background: #06090e; padding: 10px 30px; border-radius: 8px; display: inline-block; letter-spacing: 2px; }
-        .match-time { color: #ff4a4a; font-size: 1.1rem; margin-top: 10px; font-weight: bold; }
-        
-        /* 下一場賽事預告區 */
-        .next-match-banner { background: #1b2233; border: 1px solid #3b4a6b; border-radius: 12px; padding: 15px; margin: 20px 0; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; }
+        /* 1. 下一場大賽全自動即時預告欄 */
+        .next-match-banner { background: #1b2233; border: 1px solid #3b4a6b; border-radius: 12px; padding: 15px; margin: 10px 0 20px 0; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; }
         .next-title { color: #ffd700; font-weight: bold; }
         .countdown { color: #00ff87; font-family: monospace; font-weight: bold; }
 
-        /* 文字播報牆 */
-        .live-ticker { background: #111622; border: 1px solid #232d42; border-radius: 12px; padding: 25px; text-align: left; margin-top: 25px; }
-        .ticker-title { font-size: 1.2rem; color: #00ff87; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #232d42; padding-bottom: 10px; }
-        .ticker-list { list-style: none; padding: 0; margin: 0; max-height: 250px; overflow-y: auto; }
-        .ticker-item { padding: 12px 10px; border-bottom: 1px solid #1a2130; display: flex; align-items: flex-start; gap: 15px; animation: slideIn 0.2s ease-out; }
-        .ticker-time { background: #ff4a4a; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; }
-        .ticker-text { font-size: 1.05rem; color: #e1e7f0; line-height: 1.4; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        /* 即時比分看板 */
+        .scoreboard { background: linear-gradient(180deg, #161f30, #0f1522); border: 1px solid #232d42; border-radius: 12px; padding: 25px; display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; }
+        .team { flex: 1; font-size: 1.8rem; font-weight: bold; }
+        .vs-box { flex: 1; }
+        .score { font-size: 3.5rem; font-weight: 900; color: #00ff87; background: #06090e; padding: 5px 25px; border-radius: 8px; display: inline-block; }
+        
+        /* 60FPS 大螢幕 */
+        .screen-box { background: #000; border-radius: 12px; overflow: hidden; border: 1px solid #232d42; box-shadow: 0 15px 40px rgba(0,0,0,0.8); }
+        canvas { width: 100%; height: 100%; display: block; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🏆 2026 世界盃實時中文戰報中心</h1>
-    <div class="status-tag" id="sync-status">📡 24H 賽程監聽系統已就緒</div>
-    
-    <!-- 1. 下一場大賽全自動即時預告欄 -->
+    <h1>🏆 2026 世界盃 2D 實時全賽事全自動追蹤中心</h1>
+    <div class="tagline">24H 全自動賽程排程 · 11 vs 11 滿員流暢物理引擎 · 說清楚講明白</div>
+
+    <!-- 下一場自動預告倒數欄 -->
     <div class="next-match-banner">
         <div><span class="next-title">⏳ 下一場預告：</span><span id="next-match-name">載入中...</span></div>
-        <div>倒數秒數：<span class="countdown" id="countdown-timer">00:00</span></div>
+        <div>自動換場倒數：<span class="countdown" id="countdown-timer">00 秒</span></div>
     </div>
 
-    <!-- 2. 當前開踢賽事看板 -->
+    <!-- 即時比分看板 -->
     <div class="scoreboard">
-        <div class="team" id="home-team">正在載入數據...</div>
-        <div class="score-box">
-            <div class="score" id="main-score">0 : 0</div>
-            <div class="match-time" id="match-status">LIVE</div>
-        </div>
-        <div class="team" id="away-team">正在載入數據...</div>
+        <div class="team" id="display-home">載入中...</div>
+        <div class="vs-box"><div class="score" id="score-text">0 : 0</div></div>
+        <div class="team" id="display-away">載入中...</div>
     </div>
 
-    <!-- 3. 秒級文字播報牆 -->
-    <div class="live-ticker">
-        <div class="ticker-title">⚡ 實時現場事件流：</div>
-        <ul class="ticker-list" id="ticker-container">
-            <li class="ticker-item"><span class="ticker-time">系統</span><span class="ticker-text">正在接軌全球世界盃衛星數據庫...</span></li>
-        </ul>
+    <!-- 60FPS 絲滑大螢幕 -->
+    <div class="screen-box">
+        <canvas id="football-canvas"></canvas>
     </div>
 </div>
 
 <script>
-    let globalTick = 0;
-    let scoreH = 0; let scoreA = 0;
+    const canvas = document.getElementById('football-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 1280; canvas.height = 720;
 
-    // 💡 24小時無間斷自動輪替賽程表
-    const scheduleDatabase = [
-        { home: "🇫🇷 法國隊", away: "塞內加爾隊 🇸🇳", next: "奧地利 🇦🇹 vs 約旦 🇯🇴", text: ["姆巴佩中路利用速度強插！", "⚽ GOAL! 姆巴佩死角抽射破門！法國 1:0！", "塞內加爾瘋狂反撲，擊中門柱！"] },
-        { home: "奧地利隊 🇦🇹", away: "約旦隊 🇯🇴", next: "🇦🇷 阿根廷 vs 奧地利 🇦🇹", text: ["奧地利在前場展開圍攻！", "約旦隊守門員神勇將球撲出底線！", "場上防守動作激烈，裁判出示黃牌警告！"] },
-        { home: "🇦🇷 阿根廷隊", away: "奧地利隊 🇦🇹", next: "🇧🇷 巴西 vs 日本 🇯🇵", text: ["梅西中圈拿球突進！", "🔥 GOAL!! 梅西神級弧線球直接破門！！阿根廷領先！", "迪馬利亞大禁區邊緣起腳遠射！"] },
-        { home: "🇧🇷 巴西隊", away: "日本隊 🇯🇵", next: "🇫🇷 法國 vs 塞內加爾 🇸🇳", text: ["內馬爾晃過日本隊後衛！", "三笘薰左路犀利突破傳中！", "⚽ GOAL! 維尼修斯推射死角破門！"] }
+    let scoreHome = 0; let scoreAway = 0;
+    let ball = { x: 640, y: 360, vx: 3, vy: 2, radius: 10 };
+    let globalTick = 0;
+
+    // 💡 24小時無間斷自動輪替賽程名單數據庫 (正規 11打11 共22人)
+    const scheduleData = [
+        {
+            homeName: "🇦🇷 阿根廷隊", awayName: "奧地利隊 🇦🇹", nextMatch: "🇫🇷 法國 vs 塞內加爾 🇸🇳",
+            homeColor: "#4ba3e3", awayColor: "#ff3e3e",
+            homeLineup: ['梅西(前)', '阿爾瓦雷斯(前)', '迪馬利亞(翼)', '德保羅(中)', '恩佐(中)', '麥卡(中)', '莫利納(後)', '羅梅羅(後)', '奧塔(後)', '塔利(後)', '馬丁(門)'],
+            awayLineup: ['阿瑙(前)', '格雷(前)', '薩比策(翼)', '萊默爾(中)', '施拉格(中)', '鮑姆(中)', '波施(後)', '林哈特(後)', '阿拉巴(後)', '沃貝爾(後)', '彭茨(門)']
+        },
+        {
+            homeName: "🇫🇷 法國隊", awayName: "塞內加爾隊 🇸🇳", nextMatch: "🇧🇷 巴西 vs 日本 🇯🇵",
+            homeColor: "#002395", awayColor: "#00853f",
+            homeLineup: ['姆巴佩(前)', '吉魯(前)', '登貝萊(翼)', '格列茲曼(中)', '瓊阿(中)', '拉比奧(中)', '孔德(後)', '瓦拉內(後)', '烏帕(後)', '特奧(後)', '洛里(門)'],
+            awayLineup: ['迪亞(前)', '傑克遜(前)', '薩爾(翼)', '蓋伊(中)', '庫亞特(中)', '門迪(中)', '薩巴利(後)', '庫利巴利(後)', '迪亞洛(後)', '雅各布斯(後)', '門迪(門)']
+        },
+        {
+            homeName: "🇧🇷 巴西隊", awayName: "日本隊 🇯🇵", nextMatch: "🇦🇷 阿根廷 vs 奧地利 🇦🇹",
+            homeColor: "#ffdf00", awayColor: "#000080",
+            homeLineup: ['內馬爾(前)', '理查(前)', '維尼(翼)', '卡塞(中)', '帕奎塔(中)', '吉馬(中)', '達尼洛(後)', '馬昆(後)', '席爾瓦(後)', '桑德羅(後)', '阿里森(門)'],
+            awayLineup: ['上田綺世(前)', '前田大然(前)', '三笘薰(翼)', '遠藤航(中)', '守田英正(中)', '久保建英(中)', '菅原由勢(後)', '板倉滉(後)', '富安健洋(後)', '伊藤洋輝(後)', '鈴木彩艷(門)']
+        }
     ];
 
-    function scheduleManagerEngine() {
-        globalTick++;
-        
-        // 每一場比賽設定跑 30 秒，模擬真實大賽結束並全自動換下一場
-        let matchDuration = 30;
-        let matchIndex = Math.floor(globalTick / matchDuration) % scheduleDatabase.length;
-        let nextMatchIndex = (matchIndex + 1) % scheduleDatabase.length;
-        
-        let current = scheduleDatabase[matchIndex];
-        let nextData = scheduleDatabase[nextMatchIndex];
+    // 初始化 22 個空球員位置
+    let players = [];
+    const positionsY =;
+    const positionsXHome =;
+    const positionsXAway =;
 
-        // 計算下一場大賽的剩餘倒數秒數
-        let remainingTime = matchDuration - (globalTick % matchDuration);
-        document.getElementById('countdown-timer').innerHTML = `${remainingTime.toString().padStart(2, '0')} 秒`;
-        
-        // 1. 自動把「下一場對戰組合」說清楚顯示在預告欄
-        document.getElementById('next-match-name').innerHTML = `${current.next}`;
-
-        // 2. 當切換至新場次時，看板與分數自動歸零重新出發
-        if (globalTick % matchDuration === 1) {
-            scoreH = 0; scoreA = 0;
-            let tc = document.getElementById('ticker-container');
-            tc.innerHTML = `<li class="ticker-item"><span class="ticker-time">📡</span><span class="ticker-text" style="color: #00ff87; font-weight:bold;">【自動換場】下一場時間到！網頁大腦已自動切換直播至：${current.home} vs ${current.away}</span></li>` + tc.innerHTML;
-        }
-
-        // 修改看板名字
-        document.getElementById('home-team').innerHTML = current.home;
-        document.getElementById('away-team').innerHTML = current.away;
-        document.getElementById('sync-status').innerHTML = `📡 24H 賽程監聽系統：已連續秒級跟蹤 ${globalTick} 秒 · 正在跟隨真人絕對數據`;
-
-        // 3. 每 5 秒自動爬取事件並噴在畫面上
-        if (globalTick % 5 === 0) {
-            let tc = document.getElementById('ticker-container');
-            let randomText = current.text[Math.floor((globalTick / 5) % current.text.length)];
-            
-            if (randomText.includes("破門") || randomText.includes("球進了")) {
-                if (Math.random() > 0.5) { scoreH++; } else { scoreA++; }
-            }
-            let mockMin = Math.floor((globalTick % matchDuration) * 3);
-            tc.innerHTML = `<li class="ticker-item"><span class="ticker-time">${mockMin}'</span><span class="ticker-text">${randomText}</span></li>` + tc.innerHTML;
-        }
-
-        document.getElementById('main-score').innerHTML = `${scoreH} : ${scoreA}`;
+    for(let i=0; i<11; i++) {
+        players.push({ name: '', team: 'home', x: positionsXHome[i], y: positionsY[i], homeX: positionsXHome[i], homeY: positionsY[i], color: '#fff', isGK: i===10 });
+        players.push({ name: '', team: 'away', x: positionsXAway[i], y: positionsY[i], homeX: positionsXAway[i], homeY: positionsY[i], color: '#fff', isGK: i===10 });
     }
 
-    // 每一秒鐘高頻率自動巡邏計算，死死不卡頓
-    setInterval(scheduleManagerEngine, 1000);
+    // 24小時排程管理大腦：每 30 秒自動換下一場比賽，自動換 22 人的名牌
+    function autoSchedulerManager() {
+        globalTick++;
+        let matchDuration = 30; // 每一場放 30 秒展示，隨後自己換下一場
+        let currentIdx = Math.floor(globalTick / matchDuration) % scheduleData.length;
+        let data = scheduleData[currentIdx];
+
+        // 換預告看板
+        let remaining = matchDuration - (globalTick % matchDuration);
+        document.getElementById('countdown-timer').innerHTML = `${remaining.toString().padStart(2, '0')} 秒`;
+        document.getElementById('next-match-name').innerHTML = data.nextMatch;
+
+        // 換比分大名字
+        document.getElementById('display-home').innerHTML = data.homeName;
+        document.getElementById('display-away').innerHTML = data.awayName;
+
+        // 當剛好切換場次時，比分重置
+        if (globalTick % matchDuration === 1) { scoreHome = 0; scoreAway = 0; ball.x = 640; ball.y = 360; ball.vx = 4; }
+
+        // 💥 把 22 個真人的名字與制服顏色，全自動填進場上的 22 個小圓點！
+        let hCount = 0; let aCount = 0;
+        players.forEach((p, idx) => {
+            if(p.team === 'home') {
+                p.name = data.homeLineup[hCount];
+                p.color = p.isGK ? '#13b38c' : data.homeColor;
+                hCount++;
+            } else {
+                p.name = data.awayLineup[aCount];
+                p.color = p.isGK ? '#e69512' : data.awayColor;
+                aCount++;
+            }
+        });
+    }
+
+    function drawField() {
+        ctx.fillStyle = '#144c23'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 4;
+        ctx.strokeRect(60, 50, canvas.width - 120, canvas.height - 100);
+        ctx.beginPath(); ctx.moveTo(640, 50); ctx.lineTo(640, 670); ctx.stroke();
+        ctx.beginPath(); ctx.arc(640, 360, 100, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeRect(60, 160, 160, 400); ctx.strokeRect(canvas.width - 220, 160, 160, 400);
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 6;
+        ctx.strokeRect(15, 300, 45, 120); ctx.strokeRect(canvas.width - 60, 300, 45, 120);
+    }
+
+    function updatePhysics() {
+        ball.x += ball.vx; ball.y += ball.vy;
+        if (ball.y < 65 || ball.y > 655) ball.vy *= -1;
+
+        if (ball.y >= 300 && ball.y <= 420) {
+            if (ball.x < 60) { scoreAway++; ball.x = 640; ball.y = 360; ball.vx = 4; } 
+            else if (ball.x > canvas.width - 60) { scoreHome++; ball.x = 640; ball.y = 360; ball.vx = -4; }
+        } else {
+            if (ball.x < 70 || ball.x > canvas.width - 70) ball.vx *= -1;
+        }
+
+        players.forEach(p => {
+            if(p.isGK) { p.y += (ball.y - p.y) * 0.05; if(p.y<310)p.y=310; if(p.y>410)p.y=410; return; }
+            let dx = ball.x - p.x; let dy = ball.y - p.y; let dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 220) {
+                p.x += (dx / dist) * 3.8; p.y += (dy / dist) * 3.8;
+                if (dist < 18) {
+                    ball.vx = (p.team === 'home') ? (5 + Math.random() * 5) : -(5 + Math.random() * 5);
+                    ball.vy = (Math.random() - 0.5) * 6;
+                }
+            } else { p.x += (p.homeX - p.x) * 0.03; p.y += (p.homeY - p.y) * 0.03; }
+        });
+        document.getElementById('score-text').innerHTML = `${scoreHome} : ${scoreAway}`;
+    }
+
+    function gameLoop() {
+        drawField(); updatePhysics();
+        // 渲染正規 22 人名牌小圓點，絕對不漏人！
+        players.forEach(p => {
+            ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 14, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+            
+            if(p.name.includes("梅西") || p.name.includes("姆巴佩") || p.name.includes("內馬爾")) {
+                ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 3.5; ctx.stroke();
+            }
+            
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 12px sans-serif';
+            ctx.shadowColor = 'black'; ctx.shadowBlur = 3;
+            ctx.fillText(p.name, p.x - 35, p.y + 26); ctx.shadowBlur = 0;
+        });
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#000000'; ctx.lineWidth = 2; ctx.stroke();
+        requestAnimationFrame(gameLoop);
+    }
+
+    // 啟動排程管理大腦
+    setInterval(autoSchedulerManager, 1000);
+    autoSchedulerManager();
+    gameLoop();
 </script>
 </body>
 </html>
-
