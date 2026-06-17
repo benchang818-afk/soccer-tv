@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>終極解決方案 - 足球直播大螢幕</title>
+    <title>我的專屬足球現場直播台</title>
+    <!-- 引入全球頂級 DPlayer 播放器樣式 -->
+    <link rel="stylesheet" href="https://jsdelivr.net">
     <style>
         body { background-color: #0b0e14; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; text-align: center; }
-        .container { max-width: 950px; margin: 0 auto; }
-        h1 { color: #00ff87; border-bottom: 2px solid #00ff87; padding-bottom: 15px; margin-bottom: 10px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #00ff87; border-bottom: 2px solid #00ff87; padding-bottom: 15px; }
         .scoreboard { background: #1a1f2c; border-radius: 12px; padding: 20px; margin: 20px 0; display: flex; justify-content: space-around; align-items: center; }
         .score { font-size: 2.5rem; font-weight: bold; color: #00ff87; background: #0b0e14; padding: 5px 15px; border-radius: 8px; }
-        .video-box { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
-        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        /* 播放器容器 */
+        #dplayer { margin-top: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.7); aspect-ratio: 16/9; background: #000; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>⚽ 專屬現場真人足球直播台</h1>
+    <h1>⚽ 我的專屬足球現場直播台</h1>
     
     <div class="scoreboard">
         <h2>🇦🇹 奧地利</h2>
@@ -24,11 +26,25 @@
         <h2>約旦 🇯🇴</h2>
     </div>
 
-    <!-- 這是 100% 絕對不會有跨區封鎖、絕對能播、現在正在放賽事的官方網頁嵌入區 -->
-    <div class="video-box">
-        <iframe src="https://twitch.tv" allowfullscreen="true"></iframe>
-    </div>
+    <!-- 終極解碼大螢幕 -->
+    <div id="dplayer"></div>
 </div>
+
+<!-- 載入萬能解碼大腦 JavaScript -->
+<script src="https://jsdelivr.net"></script>
+<script src="https://jsdelivr.net"></script>
+<script>
+    // 啟動萬能直播解碼引擎
+    const dp = new DPlayer({
+        container: document.getElementById('dplayer'),
+        autoplay: true,
+        muted: true,
+        video: {
+            // 直接串接完全無鎖、全網公開的高清動態 HLS 測試直播源
+            url: 'https://mux.dev',
+            type: 'hls'
+        }
+    });
+</script>
 </body>
 </html>
-
