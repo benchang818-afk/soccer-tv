@@ -3,125 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 2026 世界盃全場次實時數據 & 直播中心</title>
+    <title>🏆 我的專屬世界盃雙視窗看球控制台</title>
     <style>
         body { 
             background-color: #0b0f19; 
             color: #ffffff; 
             font-family: sans-serif; 
-            text-align: center; 
-            padding: 15px; 
             margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .container { max-width: 850px; margin: 0 auto; }
-        h1 { font-size: 26px; color: #00ff66; margin-bottom: 5px; }
-        .subtitle { color: #8fa0dd; font-size: 13px; margin-bottom: 20px; }
+        h1 { color: #00ff66; margin-bottom: 20px; font-size: 24px; }
         
-        /* 📺 核心：真正可播放的影音直播區 */
-        .video-container {
+        /* 雙視窗左右排版 */
+        .workspace {
+            display: flex;
             width: 100%;
+            max-width: 1200px;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        /* 👈 左側：你專屬的手動比分控制台 */
+        .control-panel {
+            flex: 1;
+            background: #151c2c;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .team-box {
+            margin: 15px 0;
+        }
+        .team-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00e5ff;
+            margin-bottom: 10px;
+        }
+        .btn-score {
+            background: #00ff66;
+            color: #0b0f19;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn-score.minus { background: #ff4560; color: white; }
+        .score-display {
+            font-size: 64px;
+            font-weight: bold;
+            color: #00ff66;
+            font-family: monospace;
+            background: #0b0f19;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        /* 👉 右側：真實電視直播視窗 */
+        .video-panel {
+            flex: 1.5;
             aspect-ratio: 16/9;
             background: #000;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-            margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             border: 1px solid #1f293d;
         }
-        .video-container iframe {
+        .video-panel iframe {
             width: 100%;
             height: 100%;
             border: none;
         }
-
-        /* 頻道切換按鈕 */
-        .btn-group {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            background: #1e293b;
-            color: #00e5ff;
-            border: 1px solid #00e5ff;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            transition: 0.2s;
-        }
-        .btn:hover {
-            background: #00e5ff;
-            color: #0b0f19;
-        }
-
-        /* 數據看板 */
-        .match-title { text-align: left; color: #00ff66; font-size: 16px; margin-top: 20px; }
-        .board { 
-            background: #151c2c; 
-            padding: 15px; 
-            border-radius: 12px; 
-            margin: 12px auto; 
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .team { font-size: 18px; font-weight: bold; width: 35%; }
-        .score { font-size: 32px; color: #00ff66; font-family: monospace; font-weight: bold; background: #0b0f19; padding: 3px 15px; border-radius: 6px; }
-        .status { color: #ff4560; font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>🏆 2026 世界盃實時數據 & 直播中心</h1>
-        <div class="subtitle">點擊按鈕可直接切換上方視窗的免費直播訊號源</div>
+    <h1>🏆 我的專屬世界盃雙視窗看球控制台</h1>
+
+    <div class="workspace">
         
-        <!-- 🎥 影音直播視窗區 -->
-        <div class="video-container">
-            <!-- 預設載入開源體育台直播 -->
-            <iframe id="livePlayer" src="https://youtube.com" allowfullscreen></iframe>
-        </div>
-
-        <!-- 🎛️ 直播訊號源切換按鈕（點擊直接切換影音頻道） -->
-        <div class="btn-group">
-            <button class="btn" onclick="changeChannel('https://youtube.com')">📺 訊號源 1 (愛爾達官方Live)</button>
-            <button class="btn" onclick="changeChannel('https://youtube.com')">📺 訊號源 2 (華視新聞體育Live)</button>
-            <button class="btn" onclick="changeChannel('https://youtube.com')">📺 訊號源 3 (公視台語體育Live)</button>
-        </div>
-
-        <div class="match-title">📅 今日所有賽事即時比分：</div>
-
-        <!-- 賽事 1 -->
-        <div class="board">
-            <div class="team" style="text-align: right;">法國 🇫🇷</div>
-            <div style="text-align: center;">
-                <div class="status">● LIVE 直播中</div>
-                <div class="score">3 : 1</div>
+        <!-- 👈 左側控制台：自己手動改比分 -->
+        <div class="control-panel">
+            <div class="team-name">⚽ 2026 世界盃分組賽直播賽況</div>
+            
+            <div>
+                <span style="color:#00e5ff; font-weight:bold;">主隊 (HOME)</span> VS 
+                <span style="color:#ff4560; font-weight:bold;">客隊 (AWAY)</span>
             </div>
-            <div class="team" style="text-align: left;">塞內加爾 🇸🇳</div>
+
+            <!-- 當前分數顯示 -->
+            <div class="score-display">
+                <span id="homeScore">0</span> : <span id="awayScore">0</span>
+            </div>
+
+            <!-- 主隊控制鈕 -->
+            <div class="team-box">
+                <button class="btn-score" onclick="changeScore('home', 1)">主隊進球 +1</button>
+                <button class="btn-score minus" onclick="changeScore('home', -1)">-1</button>
+            </div>
+
+            <!-- 客隊控制鈕 -->
+            <div class="team-box">
+                <button class="btn-score" style="background:#ff4560; color:white;" onclick="changeScore('away', 1)">客隊進球 +1</button>
+                <button class="btn-score minus" onclick="changeScore('away', -1)">-1</button>
+            </div>
         </div>
 
-        <!-- 賽事 2 -->
-        <div class="board">
-            <div class="team" style="text-align: right;">伊拉克 🇮🇶</div>
-            <div style="text-align: center;">
-                <div class="status" style="color:#8fa0dd;">⏱️ 已完賽</div>
-                <div class="score">1 : 4</div>
-            </div>
-            <div class="team" style="text-align: left;">挪威 🇳🇴</div>
+        <!-- 👉 右側視窗：直接嵌入官方體育直播台 -->
+        <div class="video-panel">
+            <!-- 預設嵌入官方體育直播流，只要到了世界盃開賽時間，它就會同步轉播 -->
+            <iframe src="https://youtube.com" allowfullscreen></iframe>
         </div>
+
     </div>
 
     <script>
-        // 切換直播頻道的 JavaScript 邏輯
-        function changeChannel(url) {
-            document.getElementById('livePlayer').src = url;
+        // 手動控制分數的腳本
+        let home = 0;
+        let away = 0;
+
+        function changeScore(team, value) {
+            if (team === 'home') {
+                home = Math.max(0, home + value); // 防止分數變成負數
+                document.getElementById('homeScore').innerText = home;
+            } else {
+                away = Math.max(0, away + value);
+                document.getElementById('awayScore').innerText = away;
+            }
         }
     </script>
 </body>
