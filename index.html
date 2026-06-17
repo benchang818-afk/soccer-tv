@@ -4,25 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ 全球賽事 2D 數據流秒級自適應直播中心 ⚡</title>
+    <title>🏆 全球賽事 2D 數據流秒級自適應直播中心 🏆</title>
     <style>
         body { background-color: #06090e; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; text-align: center; }
         .container { max-width: 1050px; margin: 0 auto; }
         h1 { color: #00ff87; text-shadow: 0 0 10px rgba(0,255,135,0.4); margin-bottom: 5px; }
         .tagline { color: #8b9bb4; font-size: 0.95rem; margin-bottom: 20px; }
-        
-        /* 賽事全自動切換面板 */
         .match-selector-box { background: #111622; border: 1px solid #232d42; border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: left; }
         .box-title { font-weight: bold; color: #00ff87; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         select { background: #1a2233; color: #fff; border: 1px solid #3b4a6b; padding: 12px; border-radius: 6px; width: 100%; font-size: 1rem; outline: none; cursor: pointer; }
-        
-        /* 比分看板 */
         .scoreboard { background: linear-gradient(180deg, #161f30, #0f1522); border: 1px solid #232d42; border-radius: 12px; padding: 25px; display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; }
         .team { flex: 1; font-size: 1.8rem; font-weight: bold; }
         .vs-box { flex: 1; }
         .score { font-size: 3.5rem; font-weight: 900; color: #00ff87; background: #06090e; padding: 5px 25px; border-radius: 8px; display: inline-block; }
-        
-        /* 2D戰術電子大螢幕 */
         .screen-box { background: #000; border-radius: 12px; overflow: hidden; border: 1px solid #232d42; box-shadow: 0 15px 40px rgba(0,0,0,0.8); }
         canvas { width: 100%; height: 100%; display: block; }
     </style>
@@ -33,12 +27,12 @@
     <h1>⚽ 全球賽事 2D 數據流秒級自適應直播中心</h1>
     <div class="tagline">動態陣容解碼核心 · 每一場、每一秒、全自動說清楚</div>
 
-    <!-- 1. 全自動賽事數據通道切換器 -->
+    <!-- 賽事切換選單 -->
     <div class="match-selector-box">
         <div class="box-title">📡 選擇全球實時監聽中的賽事數據通道：</div>
         <select id="match-selector" onchange="autoSwitchTeamData()">
             <option value="ARG_AUT" data-home="🇦🇷 阿根廷" data-away="奧地利 🇦🇹" data-h1="梅西 (前鋒)" data-h2="迪馬利亞 (中場)" data-a1="阿瑙托維奇 (前鋒)" data-a2="阿拉巴 (後衛)">【數據通道 1】世界盃分組賽 - 阿根廷 vs 奧地利 (實時陣容同步)</option>
-            <option value="FRA_SEN" data-home="🇫🇷 法國" data-away="塞內加爾 🇸🇳" data-h1="姆巴佩 (前鋒)" data-h2="格列茲曼 (中場)" data-a1="尼亞列 (前鋒)" data-a2="庫利巴利 (後衛)">【數據通道 2】世界盃分組賽 - 法國 vs 塞內加爾 (實時陣容同步)</option>
+            <option value="FRA_SEN" data-home="🇫🇷 法國" data-away="塞內加爾 🇸🇳" data-h1="姆巴佩 (前鋒)" data-h2="格列茲曼 (中場)" data-a1="馬內 (前鋒)" data-a2="庫利巴利 (後衛)">【數據通道 2】世界盃分組賽 - 法國 vs 塞內加爾 (實時陣容同步)</option>
             <option value="BRA_JPN" data-home="🇧🇷 巴西" data-away="日本 🇯🇵" data-h1="內馬爾 (前鋒)" data-h2="維尼修斯 (中場)" data-a1="三笘薰 (前鋒)" data-a2="遠藤航 (後衛)">【數據通道 3】國際友誼賽 - 巴西 vs 日本 (實時陣容同步)</option>
         </select>
     </div>
@@ -65,48 +59,48 @@
 
     let scoreHome = 0;
     let scoreAway = 0;
+    
+    // 初始化足球軌道參數
     let ball = { x: 640, y: 360, vx: 5, vy: 3, radius: 10 };
 
-    // 2. 自適應大腦：球員資料全部變成彈性變數，會隨著選單「自己換掉名字與隊服」
+    // 核心數據結構：定義球員與各自在場上的名字
     let players = [
-        { name: '', team: 'home', x: 450, y: 250, color: '#4ba3e3', speed: 3.5 },
-        { name: '', team: 'home', x: 550, y: 450, color: '#4ba3e3', speed: 3.8 },
-        { name: '守門員', team: 'home', x: 100, y: 360, color: '#13b38c', speed: 0, isGK: true },
-        { name: '', team: 'away', x: 830, y: 250, color: '#ff3e3e', speed: 3.5 },
-        { name: '', team: 'away', x: 730, y: 450, color: '#ff3e3e', speed: 3.7 },
-        { name: '守門員', team: 'away', x: 1180, y: 360, color: '#e69512', speed: 0, isGK: true }
+        { name: '', team: 'home', x: 350, y: 220, color: '#4ba3e3', speed: 3.5 },
+        { name: '', team: 'home', x: 500, y: 480, color: '#4ba3e3', speed: 3.8 },
+        { name: '守門員', team: 'home', x: 120, y: 360, color: '#13b38c', speed: 0, isGK: true },
+        { name: '', team: 'away', x: 930, y: 220, color: '#ff3e3e', speed: 3.5 },
+        { name: '', team: 'away', x: 780, y: 480, color: '#ff3e3e', speed: 3.7 },
+        { name: '守門員', team: 'away', x: 1160, y: 360, color: '#e69512', speed: 0, isGK: true }
     ];
 
-    // 3. 全自動數據刷新大腦：一換場次，所有球員名字、位置、衣服立刻自己說清楚！
+    // 全自動大腦：更換選單時，球員頂上的繁體名牌和制服顏色自己變！
     function autoSwitchTeamData() {
         var selector = document.getElementById("match-selector");
         var opt = selector.options[selector.selectedIndex];
 
-        // 換看板名字
         document.getElementById("display-home").innerHTML = opt.getAttribute("data-home");
         document.getElementById("display-away").innerHTML = opt.getAttribute("data-away");
 
-        // 換球員小圓點頭上的名字與位置
+        // 將選單中的真實球員名字塞進陣列
         players[0].name = opt.getAttribute("data-h1");
         players[1].name = opt.getAttribute("data-h2");
         players[3].name = opt.getAttribute("data-a1");
         players[4].name = opt.getAttribute("data-a2");
 
-        // 自動更換球隊制服顏色
+        // 隨隊伍自動更換衣服顏色
         if (opt.value === "FRA_SEN") {
-            players[0].color = "#002395"; players[1].color = "#002395"; // 法國深藍
-            players[3].color = "#00853f"; players[4].color = "#00853f"; // 塞內加爾綠
+            players[0].color = "#002395"; players[1].color = "#002395";
+            players[3].color = "#00853f"; players[4].color = "#00853f";
         } else if (opt.value === "BRA_JPN") {
-            players[0].color = "#ffdf00"; players[1].color = "#ffdf00"; // 巴西黃
-            players[3].color = "#000080"; players[4].color = "#000080"; // 日本藍
+            players[0].color = "#ffdf00"; players[1].color = "#ffdf00";
+            players[3].color = "#000080"; players[4].color = "#000080";
         } else {
-            players[0].color = "#4ba3e3"; players[1].color = "#4ba3e3"; // 阿根廷藍
-            players[3].color = "#ff3e3e"; players[4].color = "#ff3e3e"; // 奧地利紅
+            players[0].color = "#4ba3e3"; players[1].color = "#4ba3e3";
+            players[3].color = "#ff3e3e"; players[4].color = "#ff3e3e";
         }
         
-        // 分數重算
         scoreHome = 0; scoreAway = 0;
-        ball.x = 640; ball.y = 360; ball.vx = 5; ball.vy = 3;
+        ball.x = 640; ball.y = 360; ball.vx = 6; ball.vy = 4;
     }
 
     function drawField() {
@@ -123,14 +117,14 @@
 
     function updateAI() {
         players.forEach(p => {
-            if(p.isGK) return; // 守門員留守
+            if(p.isGK) return;
             let dx = ball.x - p.x; let dy = ball.y - p.y;
             let dist = Math.sqrt(dx * dx + dy * dy);
             if (dist > 18) {
                 p.x += (dx / dist) * p.speed; p.y += (dy / dist) * p.speed;
             } else {
-                if (p.team === 'home') { ball.vx = 10 + Math.random() * 5; ball.vy = (Math.random() - 0.5) * 8; } 
-                else { ball.vx = -(10 + Math.random() * 5); ball.vy = (Math.random() - 0.5) * 8; }
+                if (p.team === 'home') { ball.vx = 11 + Math.random() * 4; ball.vy = (Math.random() - 0.5) * 8; } 
+                else { ball.vx = -(11 + Math.random() * 4); ball.vy = (Math.random() - 0.5) * 8; }
             }
         });
 
@@ -138,10 +132,9 @@
         ball.vx *= 0.98; ball.vy *= 0.98;
         if (ball.y < 60 || ball.y > 660) ball.vy *= -1;
 
-        // 進球門框判定
         if (ball.y >= 300 && ball.y <= 420) {
-            if (ball.x < 60) { scoreAway++; ball.x = 640; ball.y = 360; ball.vx = 5; } 
-            else if (ball.x > canvas.width - 60) { scoreHome++; ball.x = 640; ball.y = 360; ball.vx = -5; }
+            if (ball.x < 60) { scoreAway++; ball.x = 640; ball.y = 360; ball.vx = 6; } 
+            else if (ball.x > canvas.width - 60) { scoreHome++; ball.x = 640; ball.y = 360; ball.vx = -6; }
         } else {
             if (ball.x < 60 || ball.x > canvas.width - 60) ball.vx *= -1;
         }
@@ -152,24 +145,34 @@
         drawField();
         updateAI();
 
-        // 4. 60FPS 絲滑渲染球員，名牌跟著每秒重新畫
+        // ⚠️ 修正：把所有小圓點和繁體中文名字真正「畫」在螢幕上！
         players.forEach(p => {
-            ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 16, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); 
+            ctx.arc(p.x, p.y, 18, 0, Math.PI * 2); // 畫出球員圓點
+            ctx.fill();
             ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
-            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 15px sans-serif';
-            ctx.shadowColor = 'black'; ctx.shadowBlur = 4;
+            
+            // 特效：如果是梅西 (通道1的第一個球員)，給他帶上發光金圈
+            if(p.name.includes("梅西")) {
+                ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 4; ctx.stroke();
+            }
+
+            // 在圓點上方寫清楚球員的名字與戰術位置
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.shadowColor = 'black'; ctx.shadowBlur = 4; // 字體黑色陰影發光
             ctx.fillText(p.name, p.x - 45, p.y - 25);
-            ctx.shadowBlur = 0;
+            ctx.shadowBlur = 0; // 重設陰影
         });
 
-        // 5. 絲滑渲染足球
+        // 畫足球
         ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2); ctx.fill();
         ctx.strokeStyle = '#000000'; ctx.lineWidth = 2; ctx.stroke();
 
         requestAnimationFrame(gameLoop);
     }
 
-    // 初始化第一次載入
     autoSwitchTeamData();
     gameLoop();
 </script>
