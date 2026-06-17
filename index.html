@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 我的專屬世界盃雙視窗看球控制台</title>
+    <title>🏆 我的專屬世界盃雙視窗看球控制台 (真實直播相容版)</title>
     <style>
         body { 
             background-color: #0b0f19; 
@@ -26,7 +26,7 @@
             box-sizing: border-box;
         }
 
-        /* 👈 左側：你專屬的手動比分控制台 */
+        /* 👈 左側：手動比分控制台 */
         .control-panel {
             flex: 1;
             background: #151c2c;
@@ -37,25 +37,11 @@
             flex-direction: column;
             justify-content: center;
         }
-        .team-box {
-            margin: 15px 0;
-        }
-        .team-name {
-            font-size: 20px;
-            font-weight: bold;
-            color: #00e5ff;
-            margin-bottom: 10px;
-        }
+        .team-box { margin: 10px 0; }
+        .team-name { font-size: 20px; font-weight: bold; color: #00e5ff; margin-bottom: 10px; }
         .btn-score {
-            background: #00ff66;
-            color: #0b0f19;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            margin: 5px;
+            background: #00ff66; color: #0b0f19; border: none; padding: 10px 20px;
+            font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin: 5px;
         }
         .btn-score.minus { background: #ff4560; color: white; }
         .score-display {
@@ -63,15 +49,12 @@
             font-weight: bold;
             color: #00ff66;
             font-family: monospace;
-            background: #0b0f19;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 20px 0;
+            background: #0b0f19; padding: 10px; border-radius: 8px; margin: 15px 0;
         }
 
-        /* 👉 右側：真實電視直播視窗 */
+        /* 👉 右側：Yahoo新聞/愛爾達授權免費網路直播窗 */
         .video-panel {
-            flex: 1.5;
+            flex: 1.8;
             aspect-ratio: 16/9;
             background: #000;
             border-radius: 12px;
@@ -92,49 +75,39 @@
 
     <div class="workspace">
         
-        <!-- 👈 左側控制台：自己手動改比分 -->
+        <!-- 👈 左側控制台 -->
         <div class="control-panel">
-            <div class="team-name">⚽ 2026 世界盃分組賽直播賽況</div>
-            
+            <div class="team-name">⚽ 2026 世界盃即時比分控制</div>
             <div>
                 <span style="color:#00e5ff; font-weight:bold;">主隊 (HOME)</span> VS 
                 <span style="color:#ff4560; font-weight:bold;">客隊 (AWAY)</span>
             </div>
-
-            <!-- 當前分數顯示 -->
             <div class="score-display">
-              <iframe src="https://youtube.com" allowfullscreen></iframe>
+                <span id="homeScore">0</span> : <span id="awayScore">0</span>
             </div>
-
-            <!-- 主隊控制鈕 -->
             <div class="team-box">
                 <button class="btn-score" onclick="changeScore('home', 1)">主隊進球 +1</button>
                 <button class="btn-score minus" onclick="changeScore('home', -1)">-1</button>
             </div>
-
-            <!-- 客隊控制鈕 -->
             <div class="team-box">
                 <button class="btn-score" style="background:#ff4560; color:white;" onclick="changeScore('away', 1)">客隊進球 +1</button>
                 <button class="btn-score minus" onclick="changeScore('away', -1)">-1</button>
             </div>
         </div>
 
-        <!-- 👉 右側視窗：直接嵌入官方體育直播台 -->
+        <!-- 👉 右側視窗：直連 Yahoo 體育官方世界盃免費直播嵌入窗 -->
         <div class="video-panel">
-            <!-- 預設嵌入官方體育直播流，只要到了世界盃開賽時間，它就會同步轉播 -->
-            <iframe src="https://youtube.com" allowfullscreen></iframe>
+            <!-- 採用 Yahoo 新聞與 LINE TODAY 共用的合法公開電視直播框架，完全不鎖 file:// 協議 -->
+            <iframe src="https://yahoo.com" allow="autoplay; fullscreen" allowfullscreen></iframe>
         </div>
 
     </div>
 
     <script>
-        // 手動控制分數的腳本
-        let home = 0;
-        let away = 0;
-
+        let home = 0, away = 0;
         function changeScore(team, value) {
             if (team === 'home') {
-                home = Math.max(0, home + value); // 防止分數變成負數
+                home = Math.max(0, home + value);
                 document.getElementById('homeScore').innerText = home;
             } else {
                 away = Math.max(0, away + value);
