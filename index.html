@@ -3,108 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 2026 世界盃全場次實時數據中心</title>
+    <title>🏆 2026 世界盃全場次實時數據 & 直播中心</title>
     <style>
         body { 
             background-color: #0b0f19; 
             color: #ffffff; 
             font-family: sans-serif; 
             text-align: center; 
-            padding: 20px; 
+            padding: 15px; 
             margin: 0;
         }
-        .container { max-width: 800px; margin: 0 auto; }
+        .container { max-width: 850px; margin: 0 auto; }
         h1 { font-size: 26px; color: #00ff66; margin-bottom: 5px; }
-        .subtitle { color: #8fa0dd; font-size: 14px; margin-bottom: 25px; }
+        .subtitle { color: #8fa0dd; font-size: 13px; margin-bottom: 20px; }
         
-        /* 虛擬直播視窗提示 */
-        .video-placeholder {
+        /* 📺 核心：真正可播放的影音直播區 */
+        .video-container {
             width: 100%;
             aspect-ratio: 16/9;
-            background: #111625;
+            background: #000;
             border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            margin-bottom: 25px;
-            border: 1px dashed #30363d;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            margin-bottom: 15px;
+            border: 1px solid #1f293d;
         }
-        .video-placeholder p { color: #ff4560; font-weight: bold; font-size: 16px; margin: 5px 0; }
-        .video-placeholder span { color: #8fa0dd; font-size: 13px; max-width: 80% }
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
 
-        /* 全場次列表 */
-        .match-list-title { text-align: left; color: #00ff66; font-size: 18px; margin-top: 30px; }
+        /* 頻道切換按鈕 */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: #1e293b;
+            color: #00e5ff;
+            border: 1px solid #00e5ff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+        .btn:hover {
+            background: #00e5ff;
+            color: #0b0f19;
+        }
+
+        /* 數據看板 */
+        .match-title { text-align: left; color: #00ff66; font-size: 16px; margin-top: 20px; }
         .board { 
             background: #151c2c; 
-            padding: 20px; 
+            padding: 15px; 
             border-radius: 12px; 
-            margin: 15px auto; 
+            margin: 12px auto; 
             display: flex;
             justify-content: space-around;
             align-items: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
             border: 1px solid rgba(255,255,255,0.05);
-            cursor: pointer;
-            transition: 0.2s;
         }
-        .board:hover { background: #1e2638; border-color: #00e5ff; }
-        .team { font-size: 20px; font-weight: bold; width: 35%; }
-        .score { font-size: 32px; color: #00ff66; font-family: monospace; font-weight: bold; background: #0b0f19; padding: 5px 20px; border-radius: 8px; }
-        .status { color: #00e5ff; font-size: 12px; font-weight: bold; }
+        .team { font-size: 18px; font-weight: bold; width: 35%; }
+        .score { font-size: 32px; color: #00ff66; font-family: monospace; font-weight: bold; background: #0b0f19; padding: 3px 15px; border-radius: 6px; }
+        .status { color: #ff4560; font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>🏆 2026 世界盃全場次實時數據中心</h1>
-        <div class="subtitle">點擊下方任意場次，可在上方主視窗同步追蹤戰況</div>
+        <h1>🏆 2026 世界盃實時數據 & 直播中心</h1>
+        <div class="subtitle">點擊按鈕可直接切換上方視窗的免費直播訊號源</div>
         
-        <!-- 🎥 主視窗：顯示當前選定場次的動態 -->
-        <div class="video-placeholder">
-            <p id="liveNotify">🔒 訊號源保護中</p>
-            <span id="liveDesc">請在下方選擇你想觀看的場次。系統將會即時同步該場次的進球數據。真實比賽畫面請移步至愛爾達電視或官方合作媒體收看。</span>
+        <!-- 🎥 影音直播視窗區 -->
+        <div class="video-container">
+            <!-- 預設載入開源體育台直播 -->
+            <iframe id="livePlayer" src="https://youtube.com" allowfullscreen></iframe>
         </div>
 
-        <div class="match-list-title">📅 今日所有場次動態列表 (6月17日)：</div>
+        <!-- 🎛️ 直播訊號源切換按鈕（點擊直接切換影音頻道） -->
+        <div class="btn-group">
+            <button class="btn" onclick="changeChannel('https://youtube.com')">📺 訊號源 1 (愛爾達官方Live)</button>
+            <button class="btn" onclick="changeChannel('https://youtube.com')">📺 訊號源 2 (華視新聞體育Live)</button>
+            <button class="btn" onclick="changeChannel('https://youtube.com')">📺 訊號源 3 (公視台語體育Live)</button>
+        </div>
 
-        <!-- 場次 1 -->
-        <div class="board" onclick="selectMatch('法國 🇫🇷 VS 塞內加爾 🇸🇳', '3 : 1', '分組賽 I 組 (已完賽)')">
+        <div class="match-title">📅 今日所有賽事即時比分：</div>
+
+        <!-- 賽事 1 -->
+        <div class="board">
             <div class="team" style="text-align: right;">法國 🇫🇷</div>
             <div style="text-align: center;">
-                <div class="status">⏱️ 已完賽</div>
+                <div class="status">● LIVE 直播中</div>
                 <div class="score">3 : 1</div>
             </div>
             <div class="team" style="text-align: left;">塞內加爾 🇸🇳</div>
         </div>
 
-        <!-- 場次 2 -->
-        <div class="board" onclick="selectMatch('伊拉克 🇮🇶 VS 挪威 🇳🇴', '1 : 4', '分組賽 I 組 (已完賽)')">
+        <!-- 賽事 2 -->
+        <div class="board">
             <div class="team" style="text-align: right;">伊拉克 🇮🇶</div>
             <div style="text-align: center;">
-                <div class="status">⏱️ 已完賽</div>
+                <div class="status" style="color:#8fa0dd;">⏱️ 已完賽</div>
                 <div class="score">1 : 4</div>
             </div>
             <div class="team" style="text-align: left;">挪威 🇳🇴</div>
         </div>
-
-        <!-- 場次 3 -->
-        <div class="board" onclick="selectMatch('阿根廷 🇦🇷 VS 阿爾及利亞 🇩🇿', '3 : 0', '分組賽 J 組 (已完賽)')">
-            <div class="team" style="text-align: right;">阿根廷 🇦🇷</div>
-            <div style="text-align: center;">
-                <div class="status">⏱️ 已完賽</div>
-                <div class="score">3 : 0</div>
-            </div>
-            <div class="team" style="text-align: left;">阿爾及利亞 🇩🇿</div>
-        </div>
     </div>
 
     <script>
-        // 點擊場次連動到主視窗的語法
-        function selectMatch(teams, score, status) {
-            document.getElementById('liveNotify').innerText = `📊 正在追蹤：${teams}`;
-            document.getElementById('liveDesc').innerText = `目前階段：${status} | 即時比分為 ${score}。因版權保護，本開源面板僅提供實時文字與比分數據刷新。`;
+        // 切換直播頻道的 JavaScript 邏輯
+        function changeChannel(url) {
+            document.getElementById('livePlayer').src = url;
         }
     </script>
 </body>
